@@ -1,0 +1,330 @@
+import sqlite3
+from pathlib import Path
+
+from ..classes.classes import SQLiteTable
+from ..classes.dataclasses import {{ table.dataclass }}
+
+
+class {{ table.dataclass }}sTable(SQLiteTable):
+    def __init__(self):
+        self.db_dir = Path(
+            '{{ table.database.name }}',
+            'data',
+            'data.db'
+        ).resolve()
+        self.dataclass = {{ table.dataclass }}
+
+        self._single_columns = { {%
+    for i, column in single_columns
+        %}
+            '{{ column.name }}': self.read_by_{{ column.name }},{% 
+            if i < len(single_columns) - 1
+                %},{%
+            endif
+        %}{%
+    endfor 
+%}
+        }
+        self._list_columns = { {%
+    for i, column in list_columns
+        %}
+            '{{ column.name }}': self.read_by_{{ column.name }}{% 
+            if i < len(list_columns) - 1
+                %},{%
+            endif
+        %}{%
+    endfor 
+%}
+        }
+        self._passive_columns = [ {%
+    for i, column in passive_columns
+        %}
+            '{{ column.name }}'{% 
+            if i < len(passive_columns) - 1
+                %},{%
+            endif
+        %}{%
+    endfor 
+%}
+        ]
+        self._groups = { {%
+    for i, group in table.groups
+        %}
+            '{{ group.name }}': self.read_by_{{ group.name }}{% 
+            if i < len(table.groups) - 1
+                %},{%
+            endif
+        %}{%
+    endfor 
+%}
+        }
+        self._filters = { {%
+    for i, filter in table.filters
+        %}
+            '{{ filter.name }}': self.read_by_{{ filter.name }}{% 
+            if i < len(table.filters) - 1
+                %},{%
+            endif
+        %}{%
+    endfor 
+%}
+        }
+
+
+    def init_db(self):
+        with sqlite3.connect(self.db_dir) as con:
+            cur = con.cursor()
+            sql = '''
+                CREATE TABLE {{ table.name }}({%
+    for i, column in enumerate(table.columns)
+        %}
+                    {{
+                        column.name 
+                    }} {{
+                        column.data_type
+                    }} {{
+                        column.not_null 
+                    }} {{
+                        column.primary_key 
+                    }} {{
+                        column.autoincrement 
+                    }} {%
+            if i < len(table.columns) - 1
+                %},{%
+            endif
+        %}{%
+    endfor
+%}
+                )
+            '''
+            cur.execute(sql)
+ 
+
+    def add(self, {{ table.name[:-1] }}: dict) -> int:
+        with sqlite3.connect(self.db_dir) as con:
+            cur = con.cursor()
+            sql = '''
+                INSERT INTO {{ table.name }} ({%
+    for i, column in enumerate(table.columns)
+        %}
+                    {{ column.name }}{%
+            if i < len(table.columns) - 1
+                %},{%
+            endif
+        %}{%
+    endfor
+%}
+                )
+                VALUES ({%
+    for i, column in enumerate(table.columns)
+        %}
+                    :{{ column.name }}{%
+            if i < len(table.columns) - 1
+                %},{%
+            endif
+        %}{%
+    endfor
+%}
+                )
+            '''
+            cur.execute(sql, {{ table.name[:-1] }}
+
+
+    def read_all(self) -> list[{{ table.dataclass }}]:
+        with sqlite3.connect(self.db_dir) as con:
+            cur = con.cursor()
+            cur.row_factory = self._dataclass_row_factory
+            sql = 'SELECT * FROM {{ table.name }}'
+            cur.execute(sql)
+            return cur.fetchall(){%
+    for column in single_columns
+        %}
+
+
+    def read_by_{{
+            column.name 
+        }}(self, {{
+            column.name 
+        }}: {{
+            column.py_data_type 
+        }}) -> {{
+            table.dataclass 
+        }}:
+        with sqlite3.connect(self.db_dir) as con:
+            cur = con.cursor()
+            cur.row_factory = self._dataclass_row_factory
+            sql = 'SELECT * FROM {{ table.name }} WHERE {{ column.name }}=?'
+            cur.execute(sql, ({{ column.name }},))
+            return cur.fetchone(){%
+    endfor
+%}{%
+    for column in list_columns
+        %}
+
+
+    def read_by_{{
+            column.name 
+        }}(self, {{
+            column.name 
+        }}: {{
+            column.py_data_type 
+        }}) -> list[{{
+            table.dataclass 
+        }}]:
+        with sqlite3.connect(self.db_dir) as con:
+            cur = con.cursor()
+            cur.row_factory = self._dataclass_row_factory
+            sql = 'SELECT * FROM {{ table.name }} WHERE {{ column.name }}=?'
+            cur.execute(sql, ({{ column.name }},))
+            return cur.fetchall(){%
+    endfor
+%}{%
+    for group in table.groups
+        %}
+
+
+    def read_by_{{
+            group.name 
+        }}(self, {{
+            group.name 
+        }}: {{
+            group.py_data_type
+        }}) -> list[{{
+            table.dataclass 
+        }}] | {{
+            table.dataclass 
+        }}:
+        with sqlite3.connect(self.db_dir) as con:
+            cur = con.cursor()
+            cur.row_factory = self._dataclass_row_factory
+            sql = '''
+                SELECT * FROM {{ table.name }}
+                WHERE {%
+            for i, column in enumerate(group.columns)
+                %}
+                    {{ column.name }}=?{%
+                    if i < len(group.columns) - 1 
+                        %}
+                OR{%
+                    endif
+                %}{%
+            endfor
+        %}
+            '''
+            cur.execute(sql, ({%
+            for i, column for enumerate(group.columns)
+                %}{{ group.name }}{%
+                    if i < len(group.columns) - 1
+                        %}, {%
+                    endif
+                %})
+            response = cur.fetchall()
+
+            if not response or len(response) != 1:
+                return response
+            return response[0]{%
+    endfor
+%}{%
+    for filter in table.filters
+        %}
+
+
+    def read_by_{{ filter.name }}(self, {%
+            for i, query in enumerate(filter.queries)
+                %}{{
+                    query.name 
+                }}: {{
+                    query.py_data_type 
+                }}{% 
+                    if i < len(filter.queries) - 1
+                        %}, {%
+                    endif            
+                %}{%
+            endfor
+        %}) -> list[{{
+            table.dataclass
+        }} | {{
+            table.dataclass
+        }}:
+        with sqlite3.connect(self.db_dir) as con:
+            cur = con.cursor()
+            cur.row_factory = self._dataclass_row_factory
+            sql = '''
+                SELECT * FROM {{ table.name }}
+                WHERE{%
+            for i, query in filter.queries
+                %}{%
+                    if query.__name__ == 'Group'
+                        %}
+                    ({%
+                            for j, column in enumerate(query.columns)
+                                %}{{ column.name }}=?{%
+                                    if j < len(query.columns) - 1
+                                        %} OR {%
+                                    endif
+                                %}{%
+                            endfor
+                        %})
+                    {%
+                    else
+                        %}{{ column.name }}=?{%
+                    endif
+                %}{%
+                    if i < len(filter.queries) - 1
+                        %}
+                AND{%
+            endfor
+        %}
+            '''
+            cur.execute(sql, ({%
+            for i, query in enumerate(filter.queries)
+                %}{%
+                    if query.__name__ == 'Group'
+                        %}{%
+                            for j, column in enumerate(query.columns) -1
+                                %}{{ query.name }}{%
+                                    if j < len(query.columns) - 1
+                                        %}, {%
+                                    endif
+                                %}{%
+                            endfor
+                        %}{%
+                    else
+                        %}{{ query.name }}{%
+                            if i < len(filter.queries) - 1
+                                %}, {%
+                            endif
+                        %}{%
+                    endif
+                %}{%
+            endfor
+        %})
+            response = cur.fetchall()
+
+            if not response or len(response) != 1:
+                return response
+            return response[0]{%
+    endfor
+%}
+
+
+    def update(self, {{ table.name[:-1] }}: {{ table.dataclass }} -> None:
+        with sqlite3.connect(self.db_dir) as con:
+        cur = con.cursor()
+        sql = '''
+            UPDATE {{ table.name }}
+            SET{%
+    for i, column in enumerate(table.columns)
+        %}
+                {{ column.name }}=:{{ column.name }}{%
+            if i < len(table.columns) - 1
+                %},{%
+            endif
+        %}{%
+    endfor
+%}
+            WHERE rowid=:rowid
+        '''
+        cur.execute(sql, {{ table.name[:-1] }}.as_dict)
+        con.commit()
+
