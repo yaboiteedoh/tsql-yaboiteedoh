@@ -3,23 +3,26 @@
 A Python Environment Database Module Generator
 
 <h3>Installation</h3>
-to install, use the command:
-```
+to install using pip:
+
+```bash
 $ pip install tsql-yaboiteedoh
 ```
-in bash
 
 <h3>Usage</h3>
 the bash command:
-```
+
+```bash
 $ tsql
 ```
+
 Runs the application in the current directory, allowing you to search it for
 valid configuration files or generate a new database where you are
 
 To get the most out of that I have it installed into a toolbox .venv, and have
 added this function to my ~/.bashrc script:
-```
+
+```bash
 sql() {
     (
         source '/home/teedoh/devkit/.venv/bin/activate'
@@ -27,6 +30,7 @@ sql() {
     )
 }
 ```
+
 Saving the configuration saves to the current directory under 
 (database name).tsql
 Default behavior is to not override previous saves, to enable easier version
@@ -34,14 +38,18 @@ control
 
 Exporting the configuration folder dumps a python module named after the database
 into the current directory, which you can reach with
-```
+
+```python
 from {database name} import Database
 ```
+
 once instantiated, you can reach into the database with the associated functions
 on the table objects
 
+```python
 db = Database()
 table_entries = db.{table name}.read_all()
+```
 
 <h3>Functionality</h3>
 
