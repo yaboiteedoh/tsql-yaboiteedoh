@@ -76,9 +76,11 @@ table_entries = db.{table name}.read_all()
 
 *0.2.0 (planned)*
 - expanded data types and parameters
-- More robust and customizable version control system
-- Hidden columns which will not appear on the dataclass object
+- config validation
 
 *0.3.0 (planned)*
-- Join tables
+- Hidden columns which will not appear on the dataclass object
+- More robust and customizable version control system
 
+*0.4.0 (planned)*
+- Join tables
