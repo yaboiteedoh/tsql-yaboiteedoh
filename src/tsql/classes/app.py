@@ -4,7 +4,6 @@ from pathlib import Path
 
 from .top_level import Menu
 from .database import Database
-from templater import Templater
 
 
 class AppMenu:
@@ -18,9 +17,9 @@ APP = AppMenu()
 
 
 class App(Menu):
-    def __init__(self, cwd):
+    def __init__(self, cwd, templater):
         self.cwd = cwd
-        self.templater = Templater(self.cwd)
+        self.templater = templater
         super().__init__(blueprint=APP)
 
     

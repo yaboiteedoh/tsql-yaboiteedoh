@@ -2,7 +2,7 @@ LICENSE
 README.md
 pyproject.toml
 src/tsql/__init__.py
-src/tsql/__main__.py
+src/tsql/cli.py
 src/tsql/classes/__init__.py
 src/tsql/classes/app.py
 src/tsql/classes/column.py
@@ -23,5 +23,6 @@ src/tsql/templater/templates/table_init.jinja
 src/tsql_yaboiteedoh.egg-info/PKG-INFO
 src/tsql_yaboiteedoh.egg-info/SOURCES.txt
 src/tsql_yaboiteedoh.egg-info/dependency_links.txt
+src/tsql_yaboiteedoh.egg-info/entry_points.txt
 src/tsql_yaboiteedoh.egg-info/requires.txt
 src/tsql_yaboiteedoh.egg-info/top_level.txt
