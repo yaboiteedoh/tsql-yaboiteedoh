@@ -212,12 +212,14 @@ class {{ table.dataclass }}sTable(SQLiteTable):
         %}
             '''
             cur.execute(sql, ({%
-            for i, column for enumerate(group.columns)
+            for i, column in enumerate(group.columns)
                 %}{{ group.name }}{%
                     if i < len(group.columns) - 1
                         %}, {%
                     endif
-                %})
+                %}{%
+            endfor
+        %})
             response = cur.fetchall()
 
             if not response or len(response) != 1:
@@ -273,6 +275,8 @@ class {{ table.dataclass }}sTable(SQLiteTable):
                     if i < len(filter.queries) - 1
                         %}
                 AND{%
+                    endif
+                %}{%
             endfor
         %}
             '''
