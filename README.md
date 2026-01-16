@@ -53,7 +53,7 @@ table_entries = db.{table name}.read_all()
 
 <h3>Functionality</h3>
 
-*0.1.8*
+*0.1.9*
 - support for datatypes
     - TEXT
     - INT
@@ -86,4 +86,7 @@ table_entries = db.{table name}.read_all()
 *0.4.0 (planned)*
 - Join tables
 - Interface overhaul
+
+*0.5.0 (planned)*
+- data migration tools
 

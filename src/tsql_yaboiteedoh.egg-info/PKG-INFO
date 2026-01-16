@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: tsql-yaboiteedoh
-Version: 0.1.8
+Version: 0.1.9
 Summary: Add your description here
 Requires-Python: >=3.11.2
 Description-Content-Type: text/markdown
@@ -13,16 +13,27 @@ Dynamic: license-file
 
 A Python Environment Database Module Generator
 
-<h2>Installation</h2>
-`$ pip install tsql-yaboiteedoh`
-<h2>Usage</h2>
-`$ tsql`
+<h3>Installation</h3>
+to install using pip:
+
+```bash
+$ pip install tsql-yaboiteedoh
+```
+
+<h3>Usage</h3>
+the bash command:
+
+```bash
+$ tsql
+```
+
 Runs the application in the current directory, allowing you to search it for
 valid configuration files or generate a new database where you are
 
 To get the most out of that I have it installed into a toolbox .venv, and have
 added this function to my ~/.bashrc script:
-```
+
+```bash
 sql() {
     (
         source '/home/teedoh/devkit/.venv/bin/activate'
@@ -38,18 +49,22 @@ control
 
 Exporting the configuration folder dumps a python module named after the database
 into the current directory, which you can reach with
-`from {database name} import Database`
+
+```python
+from {database name} import Database
+```
 
 once instantiated, you can reach into the database with the associated functions
 on the table objects
-```
+
+```python
 db = Database()
 table_entries = db.{table name}.read_all()
 ```
 
-<h4>Functionality</h4>
+<h3>Functionality</h3>
 
-*0.1.8*
+*0.1.9*
 - support for datatypes
     - TEXT
     - INT
@@ -72,9 +87,14 @@ table_entries = db.{table name}.read_all()
 
 *0.2.0 (planned)*
 - expanded data types and parameters
-- More robust and customizable version control system
-- Hidden columns which will not appear on the dataclass object
+- config validation
 
 *0.3.0 (planned)*
+- Hidden columns which will not appear on the dataclass object
+- Built in version control system
+- Logging
+
+*0.4.0 (planned)*
 - Join tables
+- Interface overhaul
 
