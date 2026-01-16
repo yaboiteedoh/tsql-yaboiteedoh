@@ -1,0 +1,24 @@
+from dataclasses import dataclass, field, asdict{%
+    for table in database.tables
+        %}
+
+
+@dataclass(slots=True)
+class {{ table.dataclass }}:{%
+            for column in table.columns
+                %}
+    {{ column.name }}: {{ column.py_data_type }}{%
+                    if not column.not_null
+                        %} | None = field(default=None){%
+                    endif
+                %}{%
+            endfor
+        %}
+
+
+    @property
+    def as_dict(self):
+        return asdict(self){%
+    endfor
+%}
+
