@@ -1,4 +1,22 @@
-import sqlite3
+{%
+    set single_columns = table.columns
+    | selectattr('returns')
+    | selectattr('unique', 'false')
+    | list
+%}{%
+    set list_columns = table.columns
+    | selectattr('returns')
+    | selectattr('unique')
+    | list
+%}{%
+    set passive_columns = table.columns
+    | selectattr('returns', 'false')
+    | list
+%}{%
+    set reference_columns = table.columns
+    | selectattr('references')
+    | list
+%}import sqlite3
 from pathlib import Path
 
 from ..classes.classes import SQLiteTable
@@ -15,9 +33,9 @@ class {{ table.dataclass }}sTable(SQLiteTable):
         self.dataclass = {{ table.dataclass }}
 
         self._single_columns = { {%
-    for i, column in single_columns
+    for i, column in enumerate(single_columns)
         %}
-            '{{ column.name }}': self.read_by_{{ column.name }},{% 
+            '{{ column.name }}': self.read_by_{{ column.name }}{% 
             if i < len(single_columns) - 1
                 %},{%
             endif
@@ -26,7 +44,7 @@ class {{ table.dataclass }}sTable(SQLiteTable):
 %}
         }
         self._list_columns = { {%
-    for i, column in list_columns
+    for i, column in enumerate(list_columns)
         %}
             '{{ column.name }}': self.read_by_{{ column.name }}{% 
             if i < len(list_columns) - 1
@@ -37,7 +55,7 @@ class {{ table.dataclass }}sTable(SQLiteTable):
 %}
         }
         self._passive_columns = [ {%
-    for i, column in passive_columns
+    for i, column in enumerate(passive_columns)
         %}
             '{{ column.name }}'{% 
             if i < len(passive_columns) - 1
@@ -48,7 +66,7 @@ class {{ table.dataclass }}sTable(SQLiteTable):
 %}
         ]
         self._groups = { {%
-    for i, group in table.groups
+    for i, group in enumerate(table.groups)
         %}
             '{{ group.name }}': self.read_by_{{ group.name }}{% 
             if i < len(table.groups) - 1
@@ -59,7 +77,7 @@ class {{ table.dataclass }}sTable(SQLiteTable):
 %}
         }
         self._filters = { {%
-    for i, filter in table.filters
+    for i, filter in enumerate(table.filters)
         %}
             '{{ filter.name }}': self.read_by_{{ filter.name }}{% 
             if i < len(table.filters) - 1
@@ -79,21 +97,43 @@ class {{ table.dataclass }}sTable(SQLiteTable):
     for i, column in enumerate(table.columns)
         %}
                     {{
-                        column.name 
-                    }} {{
-                        column.data_type
-                    }} {{
-                        column.not_null 
-                    }} {{
-                        column.primary_key 
-                    }} {{
-                        column.autoincrement 
-                    }} {%
+            column.name 
+        }} {{
+            column.data_type
+        }}{%
+            if column.not_null
+                %} NOT NULL{%
+            endif
+        %}{%
+            if column.primary_key
+                %} PRIMARY KEY{%
+            endif
+        %}{%
+            if column.autoincrement
+                %} AUTOINCREMENT{%
+            endif
+        %}{%
             if i < len(table.columns) - 1
                 %},{%
             endif
         %}{%
     endfor
+%}{%
+    if table.columns
+    | selectattr('references')
+    | first
+        %}{%
+            for column in reference_columns
+                %}
+                    FOREIGN KEY({{ column.name }})
+                        REFERENCES {{
+                            column.referenced_column.table.name
+                        }}({{
+                            column.referenced_column.name
+                        }}){%
+            endfor
+        %}{%
+    endif
 %}
                 )
             '''
@@ -108,7 +148,7 @@ class {{ table.dataclass }}sTable(SQLiteTable):
     for i, column in enumerate(table.columns)
         %}
                     {{ column.name }}{%
-            if i < len(table.columns) - 1
+            if i < len(table.columns) - 2
                 %},{%
             endif
         %}{%
@@ -127,7 +167,7 @@ class {{ table.dataclass }}sTable(SQLiteTable):
 %}
                 )
             '''
-            cur.execute(sql, {{ table.name[:-1] }}
+            cur.execute(sql, {{ table.name[:-1] }})
 
 
     def read_all(self) -> list[{{ table.dataclass }}]:
@@ -245,7 +285,7 @@ class {{ table.dataclass }}sTable(SQLiteTable):
             endfor
         %}) -> list[{{
             table.dataclass
-        }} | {{
+        }}] | {{
             table.dataclass
         }}:
         with sqlite3.connect(self.db_dir) as con:
@@ -254,7 +294,7 @@ class {{ table.dataclass }}sTable(SQLiteTable):
             sql = '''
                 SELECT * FROM {{ table.name }}
                 WHERE{%
-            for i, query in filter.queries
+            for i, query in enumerate(filter.queries)
                 %}{%
                     if query.__name__ == 'Group'
                         %}
@@ -269,7 +309,8 @@ class {{ table.dataclass }}sTable(SQLiteTable):
                         %})
                     {%
                     else
-                        %}{{ column.name }}=?{%
+                        %}
+                    {{ query.name }}=?{%
                     endif
                 %}{%
                     if i < len(filter.queries) - 1
@@ -285,7 +326,7 @@ class {{ table.dataclass }}sTable(SQLiteTable):
                 %}{%
                     if query.__name__ == 'Group'
                         %}{%
-                            for j, column in enumerate(query.columns) -1
+                            for j, column in enumerate(query.columns)
                                 %}{{ query.name }}{%
                                     if j < len(query.columns) - 1
                                         %}, {%
@@ -331,4 +372,5 @@ class {{ table.dataclass }}sTable(SQLiteTable):
         '''
         cur.execute(sql, {{ table.name[:-1] }}.as_dict)
         con.commit()
+
 
