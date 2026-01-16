@@ -2,14 +2,14 @@
 
 A Python Environment Database Module Generator
 
-<h2>Installation</h2>
+<h3>Installation</h3>
 to install, use the command:
 ```
 $ pip install tsql-yaboiteedoh
 ```
 in bash
 
-<h2>Usage</h2>
+<h3>Usage</h3>
 the bash command:
 ```
 $ tsql
@@ -43,7 +43,7 @@ on the table objects
 db = Database()
 table_entries = db.{table name}.read_all()
 
-<h4>Functionality</h4>
+<h3>Functionality</h3>
 
 *0.1.8*
 - support for datatypes
