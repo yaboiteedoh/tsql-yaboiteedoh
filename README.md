@@ -80,7 +80,10 @@ table_entries = db.{table name}.read_all()
 
 *0.3.0 (planned)*
 - Hidden columns which will not appear on the dataclass object
-- More robust and customizable version control system
+- Built in version control system
+- Logging
 
 *0.4.0 (planned)*
 - Join tables
+- Interface overhaul
+
