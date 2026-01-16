@@ -3,16 +3,20 @@
 A Python Environment Database Module Generator
 
 <h2>Installation</h2>
-to install, use the command
+to install, use the command:
 ```
+
 $ pip install tsql-yaboiteedoh
+
 ```
 in bash
 
 <h2>Usage</h2>
-the bash command
+the bash command:
 ```
+
 $ tsql
+
 ```
 Runs the application in the current directory, allowing you to search it for
 valid configuration files or generate a new database where you are
