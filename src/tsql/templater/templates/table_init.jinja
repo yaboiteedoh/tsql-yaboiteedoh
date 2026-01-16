@@ -1,0 +1,6 @@
+{%
+    for table in database.tables
+        %}from .{{ table.name }} import {{ table.dataclass }}sTable
+{%
+    endfor
+%}
