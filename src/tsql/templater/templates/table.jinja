@@ -233,7 +233,7 @@ class {{ table.dataclass }}sTable(SQLiteTable):
             WHERE {%
             for i, column in enumerate(group.columns)
                 %}
-                    {{ column.name }}=?{%
+                {{ column.name }}=?{%
                     if i < len(group.columns) - 1 
                         %}
             OR{%
@@ -288,7 +288,7 @@ class {{ table.dataclass }}sTable(SQLiteTable):
                 %}{%
                     if query.__name__ == 'Group'
                         %}
-                    ({%
+                ({%
                             for j, column in enumerate(query.columns)
                                 %}{{ column.name }}=?{%
                                     if j < len(query.columns) - 1
@@ -296,11 +296,10 @@ class {{ table.dataclass }}sTable(SQLiteTable):
                                     endif
                                 %}{%
                             endfor
-                        %})
-                    {%
+                        %}){%
                     else
                         %}
-                    {{ query.name }}=?{%
+                {{ query.name }}=?{%
                     endif
                 %}{%
                     if i < len(filter.queries) - 1
