@@ -78,7 +78,7 @@ class Group(Menu):
 
         self.name = config_dict['name']
         self.columns = [
-            column for column in self.columns
+            column for column in self.table.columns
             if column.name in columns
         ]
         if self.columns:
