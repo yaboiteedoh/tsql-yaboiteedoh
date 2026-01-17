@@ -24,12 +24,8 @@ from ..classes.dataclasses import {{ table.dataclass }}
 
 
 class {{ table.dataclass }}sTable(SQLiteTable):
-    def __init__(self):
-        self.db_dir = Path(
-            '{{ table.database.name }}',
-            'data',
-            'data.db'
-        ).resolve()
+    def __init__(self, database):
+        self.database = database
         self.dataclass = {{ table.dataclass }}
 
         self._single_columns = { {%
@@ -90,13 +86,12 @@ class {{ table.dataclass }}sTable(SQLiteTable):
 
 
     def init_db(self):
-        with sqlite3.connect(self.db_dir) as con:
-            cur = con.cursor()
-            sql = '''
-                CREATE TABLE {{ table.name }}({%
+        cur = self.database.cur
+        sql = '''
+            CREATE TABLE {{ table.name }}({%
     for i, column in enumerate(table.columns)
         %}
-                    {{
+                {{
             column.name 
         }} {{
             column.data_type
@@ -125,8 +120,8 @@ class {{ table.dataclass }}sTable(SQLiteTable):
         %}{%
             for column in reference_columns
                 %}
-                    FOREIGN KEY({{ column.name }})
-                        REFERENCES {{
+                FOREIGN KEY({{ column.name }})
+                    REFERENCES {{
                             column.referenced_column.table.name
                         }}({{
                             column.referenced_column.name
@@ -135,16 +130,15 @@ class {{ table.dataclass }}sTable(SQLiteTable):
         %}{%
     endif
 %}
-                )
-            '''
-            cur.execute(sql)
+            )
+        '''
+        cur.execute(sql)
  
 
     def add(self, {{ table.name[:-1] }}: dict) -> int:
-        with sqlite3.connect(self.db_dir) as con:
-            cur = con.cursor()
-            sql = '''
-                INSERT INTO {{ table.name }} ({%
+        cur = self.database.cur
+        sql = '''
+            INSERT INTO {{ table.name }} ({%
     for i, column in enumerate(table.columns)
         %}
                     {{ column.name }}{%
@@ -154,8 +148,8 @@ class {{ table.dataclass }}sTable(SQLiteTable):
         %}{%
     endfor
 %}
-                )
-                VALUES ({%
+            )
+            VALUES ({%
     for i, column in enumerate(table.columns)
         %}
                     :{{ column.name }}{%
@@ -165,18 +159,18 @@ class {{ table.dataclass }}sTable(SQLiteTable):
         %}{%
     endfor
 %}
-                )
-            '''
-            cur.execute(sql, {{ table.name[:-1] }})
+            )
+        '''
+        cur.execute(sql, {{ table.name[:-1] }})
+        self.database.con.commit()
 
 
     def read_all(self) -> list[{{ table.dataclass }}]:
-        with sqlite3.connect(self.db_dir) as con:
-            cur = con.cursor()
-            cur.row_factory = self._dataclass_row_factory
-            sql = 'SELECT * FROM {{ table.name }}'
-            cur.execute(sql)
-            return cur.fetchall(){%
+        cur = self.database.cur
+        cur.row_factory = self._dataclass_row_factory
+        sql = 'SELECT * FROM {{ table.name }}'
+        cur.execute(sql)
+        return cur.fetchall(){%
     for column in single_columns
         %}
 
@@ -190,12 +184,11 @@ class {{ table.dataclass }}sTable(SQLiteTable):
         }}) -> {{
             table.dataclass 
         }}:
-        with sqlite3.connect(self.db_dir) as con:
-            cur = con.cursor()
-            cur.row_factory = self._dataclass_row_factory
-            sql = 'SELECT * FROM {{ table.name }} WHERE {{ column.name }}=?'
-            cur.execute(sql, ({{ column.name }},))
-            return cur.fetchone(){%
+        cur = self.database.cur
+        cur.row_factory = self._dataclass_row_factory
+        sql = 'SELECT * FROM {{ table.name }} WHERE {{ column.name }}=?'
+        cur.execute(sql, ({{ column.name }},))
+        return cur.fetchone(){%
     endfor
 %}{%
     for column in list_columns
@@ -211,12 +204,11 @@ class {{ table.dataclass }}sTable(SQLiteTable):
         }}) -> list[{{
             table.dataclass 
         }}]:
-        with sqlite3.connect(self.db_dir) as con:
-            cur = con.cursor()
-            cur.row_factory = self._dataclass_row_factory
-            sql = 'SELECT * FROM {{ table.name }} WHERE {{ column.name }}=?'
-            cur.execute(sql, ({{ column.name }},))
-            return cur.fetchall(){%
+        cur = self.database.cur
+        cur.row_factory = self._dataclass_row_factory
+        sql = 'SELECT * FROM {{ table.name }} WHERE {{ column.name }}=?'
+        cur.execute(sql, ({{ column.name }},))
+        return cur.fetchall(){%
     endfor
 %}{%
     for group in table.groups
@@ -234,24 +226,23 @@ class {{ table.dataclass }}sTable(SQLiteTable):
         }}] | {{
             table.dataclass 
         }}:
-        with sqlite3.connect(self.db_dir) as con:
-            cur = con.cursor()
-            cur.row_factory = self._dataclass_row_factory
-            sql = '''
-                SELECT * FROM {{ table.name }}
-                WHERE {%
+        cur = self.database.cur
+        cur.row_factory = self._dataclass_row_factory
+        sql = '''
+            SELECT * FROM {{ table.name }}
+            WHERE {%
             for i, column in enumerate(group.columns)
                 %}
                     {{ column.name }}=?{%
                     if i < len(group.columns) - 1 
                         %}
-                OR{%
+            OR{%
                     endif
                 %}{%
             endfor
         %}
-            '''
-            cur.execute(sql, ({%
+        '''
+        cur.execute(sql, ({%
             for i, column in enumerate(group.columns)
                 %}{{ group.name }}{%
                     if i < len(group.columns) - 1
@@ -260,11 +251,11 @@ class {{ table.dataclass }}sTable(SQLiteTable):
                 %}{%
             endfor
         %})
-            response = cur.fetchall()
+        response = cur.fetchall()
 
-            if not response or len(response) != 1:
-                return response
-            return response[0]{%
+        if not response or len(response) != 1:
+            return response
+        return response[0]{%
     endfor
 %}{%
     for filter in table.filters
@@ -288,12 +279,11 @@ class {{ table.dataclass }}sTable(SQLiteTable):
         }}] | {{
             table.dataclass
         }}:
-        with sqlite3.connect(self.db_dir) as con:
-            cur = con.cursor()
-            cur.row_factory = self._dataclass_row_factory
-            sql = '''
-                SELECT * FROM {{ table.name }}
-                WHERE{%
+        cur = self.database.cur
+        cur.row_factory = self._dataclass_row_factory
+        sql = '''
+            SELECT * FROM {{ table.name }}
+            WHERE{%
             for i, query in enumerate(filter.queries)
                 %}{%
                     if query.__name__ == 'Group'
@@ -315,13 +305,13 @@ class {{ table.dataclass }}sTable(SQLiteTable):
                 %}{%
                     if i < len(filter.queries) - 1
                         %}
-                AND{%
+            AND{%
                     endif
                 %}{%
             endfor
         %}
-            '''
-            cur.execute(sql, ({%
+        '''
+        cur.execute(sql, ({%
             for i, query in enumerate(filter.queries)
                 %}{%
                     if query.__name__ == 'Group'
@@ -344,18 +334,17 @@ class {{ table.dataclass }}sTable(SQLiteTable):
                 %}{%
             endfor
         %})
-            response = cur.fetchall()
+        response = cur.fetchall()
 
-            if not response or len(response) != 1:
-                return response
-            return response[0]{%
+        if not response or len(response) != 1:
+            return response
+        return response[0]{%
     endfor
 %}
 
 
     def update(self, {{ table.name[:-1] }}: {{ table.dataclass }} -> None:
-        with sqlite3.connect(self.db_dir) as con:
-        cur = con.cursor()
+        cur = self.database.cur
         sql = '''
             UPDATE {{ table.name }}
             SET{%
@@ -371,6 +360,5 @@ class {{ table.dataclass }}sTable(SQLiteTable):
             WHERE rowid=:rowid
         '''
         cur.execute(sql, {{ table.name[:-1] }}.as_dict)
-        con.commit()
-
+        self.database.con.commit()
 

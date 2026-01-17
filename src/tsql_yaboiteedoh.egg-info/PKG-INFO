@@ -98,3 +98,6 @@ table_entries = db.{table name}.read_all()
 - Join tables
 - Interface overhaul
 
+*0.5.0 (planned)*
+- data migration tools
+

@@ -23,10 +23,3 @@ class SQLiteTable:
         as_dict = {key: value for key, value in zip(fields, row)}
         return self.dataclass(**as_dict)
 
-
-    def _reset_table(self):
-        with sqlite3.connect(self.db_dir) as con:
-            cur = con.cursor()
-            sql = f'DROP TABLE {self._table_name}'
-            cur.execute(sql)
-

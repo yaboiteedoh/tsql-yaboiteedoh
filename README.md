@@ -48,7 +48,8 @@ on the table objects
 
 ```python
 db = Database()
-table_entries = db.{table name}.read_all()
+with db:
+    table_entries = db.{table name}.read_all()
 ```
 
 <h3>Functionality</h3>
@@ -73,6 +74,15 @@ table_entries = db.{table name}.read_all()
         - these will exist on the dataclass object but not have an associated query function
 - Column references
     - these will update dynamically as you alter your table config
+
+*0.1.10*
+- export module alterations
+    - to use the database object via context manager
+    - to remove create tables on database object init
+        - instead use 
+```
+database.init_tables()
+```
 
 *0.2.0 (planned)*
 - expanded data types and parameters
