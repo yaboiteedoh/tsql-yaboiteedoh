@@ -16,6 +16,10 @@
     set reference_columns = table.columns
     | selectattr('references')
     | list
+%}{%
+    set without_rowid = table.columns
+    | selectattr('name', '!=', 'rowid')
+    | list
 %}import sqlite3
 from pathlib import Path
 
@@ -110,6 +114,10 @@ class {{ table.dataclass }}sTable(SQLiteTable):
         %}{%
             if column.default
                 %} DEFAULT {{ column.default }}{%
+            endif
+        %}{%
+            if column.check
+                %} CHECK {{ column.check }}{%
             endif
         %}{%
             if i < len(table.columns) - 1

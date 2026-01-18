@@ -36,7 +36,7 @@ class TogglesMenu:
         returns,
         unique,
         default,
-        #check,
+        check,
         #hidden
     ]
 TOGGLES = TogglesMenu()
@@ -69,8 +69,9 @@ class ColumnToggles(Menu):
                         if column.primary_key:
                             column.primary_key = False
                     self.column.primary_key = True
-                else:
-                    self.column.primary_key = False
+                    return None
+
+                self.column.primary_key = False
 
             case TOGGLES.default:
                 if self.column.data_type == 'BLOB':
@@ -81,9 +82,18 @@ class ColumnToggles(Menu):
                     self.column.default = self.get_default_value()
                     if self.column.default:
                         self.not_null = True
-                else:
-                    self.not_null = False
-                    self.column.default = None
+                    return None
+
+                self.not_null = False
+                self.column.default = None
+
+            case TOGGLES.check:
+                if self.column.check = True:
+                    self.column.check = False
+                    return None
+
+                res = input('\nEnter the CHECK condition\n(checks are not validated, use at your own risk)')
+                self.column.check = res
 
 
     def new_cycle(self):
@@ -129,6 +139,7 @@ class Column(Menu):
             self.unique = False
             self.default = None
             self.check = None
+            self.check_conditions = []
             self.hidden = False
             self.references = False
             self.referenced_column = None
@@ -237,14 +248,14 @@ class Column(Menu):
             'returns': self.returns,
             'unique': self.unique,
             'default': self.default,
-            'hidden': self.hidden
+            'check': self.check,
+            'hidden': self.hidden,
+            'references': False
         }
         if self.references:
             col_dict['references'] = True
             col_dict['referenced_table'] = self.referenced_column.table.name
             col_dict['referenced_column'] = self.referenced_column.name
-        else:
-            col_dict['references'] = False
         return col_dict
 
 
@@ -257,6 +268,7 @@ class Column(Menu):
         self.autoincrement = config_dict['autoincrement']
         self.returns = config_dict['returns']
         self.unique = config_dict['unique']
+        self.check = config_dict['check']
         self.hidden = config_dict['hidden']
 
         self.references = config_dict['references']

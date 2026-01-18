@@ -97,6 +97,7 @@ database.init_tables()
         - AUTOINCREMENT
         - NOT NULL
         - CHECK
+            - Saves expressions as entered
         - DEFAULT
             - Including support for
                 - CURRENT_TIME
