@@ -10,11 +10,13 @@ class ColumnMenu:
     data_type = '[t] Change Data Type'
     toggle = '[e] Edit Toggled Data'
     references = '[f] Toggle Referenced Column'
+    collate = '[c] Change Collate Func'
     options = [
         rename,
         delete,
         data_type,
         toggle,
+        collate,
         references
     ]
 COLUMN = ColumnMenu()
@@ -88,12 +90,13 @@ class ColumnToggles(Menu):
                 self.column.default = None
 
             case TOGGLES.check:
-                if self.column.check = True:
+                if self.column.check:
                     self.column.check = False
                     return None
 
-                res = input('\nEnter the CHECK condition\n(checks are not validated, use at your own risk)')
-                self.column.check = res
+                res = input('\nEnter the CHECK condition\n(checks are not validated, use at your own risk)\n')
+                if res:
+                    self.column.check = res
 
 
     def new_cycle(self):
@@ -140,6 +143,7 @@ class Column(Menu):
             self.default = None
             self.check = None
             self.check_conditions = []
+            self.collate = 'BINARY'
             self.hidden = False
             self.references = False
             self.referenced_column = None
@@ -214,17 +218,38 @@ class Column(Menu):
                     self.references = False
                     self.referenced_column = None
 
+            case COLUMN.collate:
+                if not self.data_type == 'TEXT':
+                    print('\ncollate settings only apply to TEXT columns\n')
+                    return None
+
+                collate = Menu(
+                    options=[
+                        'BINARY',
+                        'NOCASE',
+                        'RTRIM'
+                    ]
+                ).enter_once()
+
+                if not collate:
+                    return None
+
+                self.collate = collate
+
             case COLUMN.delete:
                 self.table.delete_child(self)
                 self.active = False
 
 
     def new_cycle(self):
+        conf = self.config
+        if self.data_type != 'TEXT' or self.collate == 'BINARY':
+            del conf['collate']
         print(
             '\nCOLUMN:',
             json.dumps(
                 {
-                    key: value for key, value in self.config.items()
+                    key: value for key, value in conf.items()
                     if value
                 },
                 indent=4
@@ -249,6 +274,7 @@ class Column(Menu):
             'unique': self.unique,
             'default': self.default,
             'check': self.check,
+            'collate': self.collate,
             'hidden': self.hidden,
             'references': False
         }
@@ -269,6 +295,7 @@ class Column(Menu):
         self.returns = config_dict['returns']
         self.unique = config_dict['unique']
         self.check = config_dict['check']
+        self.collate = config_dict['collate']
         self.hidden = config_dict['hidden']
 
         self.references = config_dict['references']

@@ -16,6 +16,8 @@ ROWID = {
     'returns': True,
     'unique': True,
     'default': None,
+    'check': None,
+    'collate': 'BINARY',
     'hidden': False,
     'references': False
 }

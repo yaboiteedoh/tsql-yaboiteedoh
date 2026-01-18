@@ -120,6 +120,14 @@ class {{ table.dataclass }}sTable(SQLiteTable):
                 %} CHECK {{ column.check }}{%
             endif
         %}{%
+            if column.data_type == 'TEXT'
+                %}{%
+                    if column.collate != 'BINARY'
+                        %} COLLATE {{ column.collate }}{%
+                    endif
+                %}{%
+            endif
+        %}{%
             if i < len(table.columns) - 1
                 %},{%
             endif
