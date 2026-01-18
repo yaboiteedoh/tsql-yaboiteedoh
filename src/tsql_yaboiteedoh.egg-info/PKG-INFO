@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: tsql-yaboiteedoh
-Version: 0.1.11
+Version: 0.1.12
 Summary: Add your description here
 Requires-Python: >=3.11.2
 Description-Content-Type: text/markdown
@@ -91,7 +91,7 @@ with db:
     - to use the database object via context manager
     - to remove create tables on database object init
         - instead use 
-```
+```python
 database.init_tables()
 ```
 

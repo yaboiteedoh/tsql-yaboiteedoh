@@ -26,13 +26,17 @@ class TogglesMenu:
     autoincrement = '[a] autoincrement'
     returns = '[r] returns'
     unique = '[u] unique'
-    #hidden = '[h] hidden'
+    default = '[d] default'
+    check = '[c] check'
+    hidden = '[h] hidden'
     options = [
         not_null,
         primary_key,
         autoincrement,
         returns,
         unique,
+        default,
+        #check,
         #hidden
     ]
 TOGGLES = TogglesMenu()
@@ -58,6 +62,7 @@ class ColumnToggles(Menu):
                 self.column.autoincrement = not self.column.autoincrement
             case TOGGLES.hidden:
                 self.column.hidden = not self.column.hidden
+
             case TOGGLES.primary_key:
                 if not self.column.primary_key:
                     for column in self.column.table.columns:
@@ -67,10 +72,46 @@ class ColumnToggles(Menu):
                 else:
                     self.column.primary_key = False
 
+            case TOGGLES.default:
+                if self.column.data_type == 'BLOB':
+                    print('\nDefault value on blob type column is not supported')
+                    return None
+                 
+                if not self.column.default:
+                    self.column.default = self.get_default_value()
+                    if self.column.default:
+                        self.not_null = True
+                else:
+                    self.not_null = False
+                    self.column.default = None
+
 
     def new_cycle(self):
         self.column.new_cycle()
 
+
+    def get_default_value(self):
+        valid = False
+        while not valid:
+            default = input('\nEnter the default column value:\n')
+            if (
+                default == 'CURRENT_TIME' 
+                or default == 'CURRENT_TIME'
+                or default == 'CURRENT_TIMESTAMP'
+            ):
+                return default
+
+            try:
+                match self.column.data_type:
+                    case 'TEXT':
+                        return f"'{default}'"
+                    case 'INTEGER':
+                        return int(default)
+                    case 'REAL':
+                        return float(default)
+
+            except ValueError:
+                print(f'Invalid entry for data type {self.column.data_type}')
 
 
 class Column(Menu):
@@ -86,6 +127,8 @@ class Column(Menu):
             self.autoincrement = False
             self.returns = True
             self.unique = False
+            self.default = None
+            self.check = None
             self.hidden = False
             self.references = False
             self.referenced_column = None
@@ -108,8 +151,9 @@ class Column(Menu):
                 data_type_selector = Menu(
                     options=[
                         '[1] TEXT',
-                        '[2] INT',
-                        '[3] BOOL'
+                        '[2] INTEGER',
+                        '[3] REAL',
+                        '[4] BLOB'
                     ]
                 )
                 res = data_type_selector.enter_once()
@@ -117,12 +161,15 @@ class Column(Menu):
                     case '[1] TEXT':
                         self.data_type = 'TEXT'
                         self.py_data_type = 'str'
-                    case '[2] INT':
-                        self.data_type = 'INT'
+                    case '[2] INTEGER':
+                        self.data_type = 'INTEGER'
                         self.py_data_type = 'int'
-                    case '[3] BOOL':
-                        self.data_type = 'BOOL'
-                        self.py_data_type = 'bool'
+                    case '[3] REAL':
+                        self.data_type = 'REAL'
+                        self.py_data_type = 'float'
+                    case '[4] BLOB':
+                        self.data_type = 'BLOB'
+                        self.py_data_type = 'bytes'
 
             case COLUMN.references:
                 if not self.references:
@@ -189,6 +236,7 @@ class Column(Menu):
             'autoincrement': self.autoincrement,
             'returns': self.returns,
             'unique': self.unique,
+            'default': self.default,
             'hidden': self.hidden
         }
         if self.references:
@@ -210,6 +258,7 @@ class Column(Menu):
         self.returns = config_dict['returns']
         self.unique = config_dict['unique']
         self.hidden = config_dict['hidden']
+
         self.references = config_dict['references']
         if self.references:
             table = [
@@ -220,11 +269,27 @@ class Column(Menu):
                 column for column in table.columns
                 if column.name == config_dict['referenced_column']
             ][0]
+
         match self.data_type:
             case 'TEXT':
                 self.py_data_type = 'str'
-            case 'INT':
+            case 'INTEGER':
                 self.py_data_type = 'int'
-            case 'BOOL':
-                self.py_data_type = 'bool'
+            case 'REAL':
+                self.py_data_type = 'float'
+            case 'BLOB':
+                self.py_data_type = 'bytes'
+
+        if config_dict['default']:
+            match self.data_type:
+                case 'TEXT':
+                    self.default = config_dict['default']
+                case 'INTEGER':
+                    self.default = int(config_dict['default'])
+                case 'REAL':
+                    self.default = float(config_dict['default'])
+                case False:
+                    self.default = None
+        else:
+            self.default = None
 

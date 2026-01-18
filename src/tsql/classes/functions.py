@@ -37,10 +37,8 @@ def get_name(obj):
 def get_file_name(dir, name, ext):
     i = 0
     new_name = name + f'.{ext}'
-    print(new_name)
     while new_name in os.listdir(Path(dir).absolute()):
         i += 1
-        print(new_name.split('.')[0].split('-')[0])
         new_name = new_name.split('.')[0].split('-')[0] + f'-{i}.{ext}'
     return new_name.split('.')[0]
 

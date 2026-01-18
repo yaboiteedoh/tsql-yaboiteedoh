@@ -80,12 +80,29 @@ with db:
     - to use the database object via context manager
     - to remove create tables on database object init
         - instead use 
-```
+
+```python
 database.init_tables()
 ```
 
-*0.2.0 (planned)*
+*0.2.0*
 - expanded data types and parameters
+    - data types
+        - TEXT
+        - INTEGER
+        - REAL
+        - BLOB
+    - parameters
+        - PRIMARY KEY
+        - AUTOINCREMENT
+        - NOT NULL
+        - CHECK
+        - DEFAULT
+            - Including support for
+                - CURRENT_TIME
+                - CURRENT_DATE
+                - CURRENT_TIMESTAMP
+        - COLLATE (on TEXT columns)
 - config validation
 
 *0.3.0 (planned)*
@@ -95,8 +112,8 @@ database.init_tables()
 
 *0.4.0 (planned)*
 - Join tables
-- Interface overhaul
-
-*0.5.0 (planned)*
 - data migration tools
+
+*1.0.0 (planned)*
+- Interface overhaul
 

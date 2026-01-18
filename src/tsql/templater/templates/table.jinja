@@ -108,6 +108,10 @@ class {{ table.dataclass }}sTable(SQLiteTable):
                 %} AUTOINCREMENT{%
             endif
         %}{%
+            if column.default
+                %} DEFAULT {{ column.default }}{%
+            endif
+        %}{%
             if i < len(table.columns) - 1
                 %},{%
             endif

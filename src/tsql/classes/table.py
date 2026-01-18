@@ -15,6 +15,7 @@ ROWID = {
     'autoincrement': True,
     'returns': True,
     'unique': True,
+    'default': None,
     'hidden': False,
     'references': False
 }
