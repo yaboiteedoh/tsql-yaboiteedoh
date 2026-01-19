@@ -84,3 +84,12 @@ class Filter(Menu):
             if option.name in queries
         ]
 
+
+    def validate_name(self, name):
+        if name in [
+            obj.name for obj in self.table.children
+        ]:
+            print('Filter name must be unique to all table children')
+            return False
+        return True
+

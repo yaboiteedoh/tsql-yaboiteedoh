@@ -111,6 +111,11 @@ class Database(Menu):
             self.tables.append(t)
 
 
+    @staticmethod
+    def validate_name(name):
+        return True
+
+
     def delete_table(self, table):
         self.tables.remove(table)
         self.clear_table_references(table)

@@ -195,6 +195,15 @@ class Table(Menu):
             self.children.append(f)
 
 
+    def validate_name(self, name):
+        if name in [
+            table.name for table in self.database.tables
+        ]:
+            print('Table name must be unique to Database\n')
+            return False
+        return True
+
+
     @property
     def columns(self):
         return [child for child in self.children if child.__name__ == 'Column']

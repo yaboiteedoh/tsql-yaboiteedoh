@@ -15,7 +15,8 @@ def rename(obj):
     valid = False
     while res == '' or valid == False:
         res = input(f'\nRename {obj.__name__} ({obj.name}): ')
-        valid = True
+        if obj.validate_name(res):
+            valid = True
     obj.name = snake_case(res)
 
     if obj.__name__ == 'Table':
@@ -27,7 +28,8 @@ def get_name(obj):
     valid = False
     while res == '' or valid == False:
         res = input(f'\nName for new {obj.__name__}: ')
-        valid = True
+        if obj.validate_name(res):
+            valid = True
     obj.name = snake_case(res)
 
     if obj.__name__ == 'Table':

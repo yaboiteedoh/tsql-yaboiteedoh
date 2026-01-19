@@ -84,3 +84,12 @@ class Group(Menu):
         if self.columns:
             self.py_data_type = self.columns[0].py_data_type
 
+
+    def validate_name(self, name):
+        if name in [
+            obj.name for obj in self.table.children
+        ]:
+            print('Group name must be unique to all table children')
+            return False
+        return True
+

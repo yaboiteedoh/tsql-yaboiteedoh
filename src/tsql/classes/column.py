@@ -332,3 +332,12 @@ class Column(Menu):
         else:
             self.default = None
 
+
+    def validate_name(self, name):
+        if name in [
+            obj.name for obj in self.table.children
+        ]:
+            print('Column name must be unique to all table children')
+            return False
+        return True
+
