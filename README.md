@@ -105,6 +105,9 @@ database.init_tables()
                 - CURRENT_TIMESTAMP
         - COLLATE (on TEXT columns)
 - config validation
+    - enforces unique table/column/filter/group names in their proper scopes
+    - enforces non-empty groups and filters
+    - More to come as cases emerge
 
 *0.3.0 (planned)*
 - Hidden columns which will not appear on the dataclass object

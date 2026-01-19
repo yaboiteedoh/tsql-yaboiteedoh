@@ -1,5 +1,6 @@
 import json
 import os
+import shutil
 from pathlib import Path
 
 from .top_level import Menu
@@ -80,6 +81,28 @@ class App(Menu):
 
 
     def export(self):
+        for table in self.database.tables:
+            for filter in table.filters:
+                if not filter.queries:
+                    print(f'Empty filter {filter.name} detected in table {table.name}\naborting export')
+                    return
+            for group in table.groups:
+                if not group.columns:
+                    print(f'Empty group {group.name} detected in table {table.name}\naborting export')
+                    return
+
+        dir = os.listdir(self.templater.cwd)
+        if self.database.name in dir:
+            overwrite = Menu(
+                options=['Yes', 'No'],
+                title=f'{self.database.name} module exists in directory, Overwrite?'
+            )
+        if overwrite = 'Yes':
+            shutil.rmtree(f'{self.templater.cwd}/{self.database.name})
+            print(f'\nExporting to {self.templater.cwd}/{self.database.name}/')
+            self.templater.export_module(self.database)
+            return
+
         i = 0
         while True:
             dir = os.listdir(self.templater.cwd)
@@ -90,4 +113,5 @@ class App(Menu):
 
         print(f'\nExporting to {self.templater.cwd}/{self.database.name}/')
         self.templater.export_module(self.database)
+
 

@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: tsql-yaboiteedoh
-Version: 0.1.12
+Version: 0.2.0
 Summary: Add your description here
 Requires-Python: >=3.11.2
 Description-Content-Type: text/markdown
@@ -91,13 +91,34 @@ with db:
     - to use the database object via context manager
     - to remove create tables on database object init
         - instead use 
+
 ```python
 database.init_tables()
 ```
 
-*0.2.0 (planned)*
+*0.2.0*
 - expanded data types and parameters
+    - data types
+        - TEXT
+        - INTEGER
+        - REAL
+        - BLOB
+    - parameters
+        - PRIMARY KEY
+        - AUTOINCREMENT
+        - NOT NULL
+        - CHECK
+            - Saves expressions as entered
+        - DEFAULT
+            - Including support for
+                - CURRENT_TIME
+                - CURRENT_DATE
+                - CURRENT_TIMESTAMP
+        - COLLATE (on TEXT columns)
 - config validation
+    - enforces unique table/column/filter/group names in their proper scopes
+    - enforces non-empty groups and filters
+    - More to come as cases emerge
 
 *0.3.0 (planned)*
 - Hidden columns which will not appear on the dataclass object
@@ -106,8 +127,8 @@ database.init_tables()
 
 *0.4.0 (planned)*
 - Join tables
-- Interface overhaul
-
-*0.5.0 (planned)*
 - data migration tools
+
+*1.0.0 (planned)*
+- Interface overhaul
 

@@ -199,7 +199,7 @@ class Table(Menu):
         if name in [
             table.name for table in self.database.tables
         ]:
-            print('Table name must be unique to Database\n')
+            print('Table name must be unique to Database')
             return False
         return True
 
