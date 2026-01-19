@@ -97,8 +97,8 @@ class App(Menu):
                 options=['Yes', 'No'],
                 title=f'{self.database.name} module exists in directory, Overwrite?'
             )
-        if overwrite = 'Yes':
-            shutil.rmtree(f'{self.templater.cwd}/{self.database.name})
+        if overwrite == 'Yes':
+            shutil.rmtree(f'{self.templater.cwd}/{self.database.name}')
             print(f'\nExporting to {self.templater.cwd}/{self.database.name}/')
             self.templater.export_module(self.database)
             return
