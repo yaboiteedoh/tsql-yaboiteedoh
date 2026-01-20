@@ -32,10 +32,7 @@
     set non_hidden = table.columns
     | selectattr('hidden', 'false')
     | list
-%}import sqlite3
-from pathlib import Path
-
-from ..classes.classes import SQLiteTable
+%}from ..classes.classes import SQLiteTable
 from ..classes.dataclasses import {{ table.dataclass }}
 
 
@@ -160,7 +157,7 @@ class {{ table.dataclass }}sTable(SQLiteTable):
     if table.columns
     | selectattr('references')
     | first
-        %}{%
+        %},{%
             for column in reference_columns
                 %}
                 FOREIGN KEY({{ column.name }})
@@ -293,7 +290,7 @@ class {{ table.dataclass }}sTable(SQLiteTable):
                     endif
                 %}{%
             endfor
-        %})
+        %}))
         response = cur.fetchall()
 
         if not response or len(response) != 1:
@@ -375,7 +372,7 @@ class {{ table.dataclass }}sTable(SQLiteTable):
                     endif
                 %}{%
             endfor
-        %})
+        %}))
         response = cur.fetchall()
 
         if not response or len(response) != 1:
