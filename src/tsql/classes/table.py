@@ -9,7 +9,7 @@ from .group import Group
 
 ROWID = {
     'name': 'rowid',
-    'data_type': 'INT',
+    'data_type': 'INTEGER',
     'not_null': False,
     'primary_key': True,
     'autoincrement': True,

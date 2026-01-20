@@ -2,15 +2,18 @@
     set single_columns = table.columns
     | selectattr('returns')
     | selectattr('unique', 'false')
+    | selectattr('hidden', 'false')
     | list
 %}{%
     set list_columns = table.columns
     | selectattr('returns')
     | selectattr('unique')
+    | selectattr('hidden', 'false')
     | list
 %}{%
     set passive_columns = table.columns
     | selectattr('returns', 'false')
+    | selectattr('hidden', 'false')
     | list
 %}{%
     set reference_columns = table.columns
@@ -19,6 +22,15 @@
 %}{%
     set without_rowid = table.columns
     | selectattr('name', '!=', 'rowid')
+    | selectattr('hidden', 'false')
+    | list
+%}{%
+    set hidden_columns = table.columns
+    | selectattr('hidden')
+    | list
+%}{%
+    set non_hidden = table.columns
+    | selectattr('hidden', 'false')
     | list
 %}import sqlite3
 from pathlib import Path
@@ -63,6 +75,17 @@ class {{ table.dataclass }}sTable(SQLiteTable):
             endif
         %}{%
     endfor 
+%}
+        ]
+        self._hidden_columns = [ {%
+    for i, column in enumerate(hidden_columns)
+        %}
+            '{{ column.name }}'{%
+            if i < len(hidden_columns) - 1
+                %},{%
+            endif
+        %}{%
+    endfor
 %}
         ]
         self._groups = { {%
@@ -159,10 +182,10 @@ class {{ table.dataclass }}sTable(SQLiteTable):
         cur = self.database.cur
         sql = '''
             INSERT INTO {{ table.name }} ({%
-    for i, column in enumerate(table.columns)
+    for i, column in enumerate(without_rowid)
         %}
-                    {{ column.name }}{%
-            if i < len(table.columns) - 2
+                {{ column.name }}{%
+            if i < len(without_rowid) - 1
                 %},{%
             endif
         %}{%
@@ -170,10 +193,10 @@ class {{ table.dataclass }}sTable(SQLiteTable):
 %}
             )
             VALUES ({%
-    for i, column in enumerate(table.columns)
+    for i, column in enumerate(without_rowid)
         %}
-                    :{{ column.name }}{%
-            if i < len(table.columns) - 1
+                :{{ column.name }}{%
+            if i < len(without_rowid) - 1
                 %},{%
             endif
         %}{%
@@ -359,18 +382,36 @@ class {{ table.dataclass }}sTable(SQLiteTable):
             return response
         return response[0]{%
     endfor
+%}{%
+    for column in hidden_columns
+        %}
+
+
+    def read_{{ column.name }}(rowid: int):
+        cur = self.database.cur
+        sql = 'SELECT {{ column.name }} FROM {{ table.name }} WHERE rowid=rowid'
+        cur.execute(sql, (rowid,))
+        return cur.fetchone()
+
+
+    def update_{{ column.name }}(rowid: int, {{ column.name }}: {{ column.py_data_type }}):
+        cur = self.database.cur
+        sql = 'UPDATE TABLE {{ table.name }} SET {{ column.name }}=? WHERE rowid=rowid'
+        cur.execute(sql, (rowid,))
+        self.database.con.commit(){%
+    endfor
 %}
 
 
-    def update(self, {{ table.name[:-1] }}: {{ table.dataclass }} -> None:
+    def update(self, {{ table.name[:-1] }}: {{ table.dataclass }}) -> None:
         cur = self.database.cur
         sql = '''
             UPDATE {{ table.name }}
             SET{%
-    for i, column in enumerate(table.columns)
+    for i, column in enumerate(without_rowid)
         %}
                 {{ column.name }}=:{{ column.name }}{%
-            if i < len(table.columns) - 1
+            if i < len(without_rowid) - 1
                 %},{%
             endif
         %}{%

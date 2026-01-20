@@ -92,11 +92,14 @@ class App(Menu):
                     return
 
         dir = os.listdir(self.templater.cwd)
+        overwrite = False
+
         if self.database.name in dir:
             overwrite = Menu(
                 options=['Yes', 'No'],
                 title=f'{self.database.name} module exists in directory, Overwrite?'
             )
+
         if overwrite == 'Yes':
             shutil.rmtree(f'{self.templater.cwd}/{self.database.name}')
             print(f'\nExporting to {self.templater.cwd}/{self.database.name}/')

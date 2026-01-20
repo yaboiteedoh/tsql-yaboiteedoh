@@ -1,24 +1,54 @@
-from dataclasses import dataclass, field, asdict{%
-    for table in database.tables
-        %}
-
-
-@dataclass(slots=True)
-class {{ table.dataclass }}:{%
-            for column in table.columns
+{%
+    for j, table in enumerate(database.tables)
+        %}{%
+            set non_hidden = table.columns
+            | selectattr('hidden', 'false')
+            | list
+        %}class {{ table.dataclass }}:
+    def __init__(
+        self,{%
+            for i, column in enumerate(non_hidden)
                 %}
-    {{ column.name }}: {{ column.py_data_type }}{%
+        {{ column.name }}: {{ column.py_data_type }}{%
                     if not column.not_null
-                        %} | None = field(default=None){%
+                        %} | None = None{%
                     endif
                 %}{%
+                    if i < len(non_hidden) - 1
+                        %},{%
+                    endif
+                %}{%
+            endfor
+        %}
+    ):{%
+            for column in non_hidden
+                %}
+        self.{{ column.name }} = {{ column.name }}{%
             endfor
         %}
 
 
     @property
     def as_dict(self):
-        return asdict(self){%
+        return { {%
+            for i, column in enumerate(non_hidden)
+                %}
+            '{{ column.name }}': self.{{ column.name }}{%
+                    if i < len(non_hidden) - 1
+                        %},{%
+                    endif
+                %}{%
+            endfor
+        %}
+        }{%
+            if j < len(database.tables) - 1
+                %}
+
+
+
+{%
+            endif
+        %}{%
     endfor
 %}
 

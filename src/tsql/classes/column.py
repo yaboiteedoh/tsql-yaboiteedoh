@@ -39,7 +39,7 @@ class TogglesMenu:
         unique,
         default,
         check,
-        #hidden
+        hidden
     ]
 TOGGLES = TogglesMenu()
 
