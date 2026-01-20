@@ -109,13 +109,16 @@ database.init_tables()
     - enforces non-empty groups and filters
     - More to come as cases emerge
 
-*0.3.0 (planned)*
+*0.3.0*
 - Hidden columns which will not appear on the dataclass object
-- Built in version control system
-- Logging
+    - Table dataclasses no longer use dataclass module
+    - reading and updating values on hidden classes require rowid to query
 
 *0.4.0 (planned)*
 - Join tables
+
+*0.5.0 (planned)*
+- Built in version control system
 - data migration tools
 
 *1.0.0 (planned)*
