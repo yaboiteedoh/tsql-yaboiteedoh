@@ -415,12 +415,12 @@ class {{ table.dataclass }}sTable:
 %}
             WHERE rowid=:rowid
         '''
-        cur.execute(sql, {{ table.name[:-1] }}.as_dict)
+        cur.execute(sql, {{ table.name[:-1] }}.config)
         self.database.con.commit()
 
 
     def _dataclass_row_factory(self, cur, row):
         fields = [column[0] for column in cur.description]
-        as_dict = {key: value for key, value in zip(fields, row)}
-        return {{ table.dataclass }}(as_dict)
+        config = {key: value for key, value in zip(fields, row)}
+        return {{ table.dataclass }}(config)
 
