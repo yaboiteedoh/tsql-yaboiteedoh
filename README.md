@@ -126,8 +126,8 @@ database.init_tables()
         - main module contains everything but the table class definitions
 - Module should now be able to find the included database no matter where it gets run from
 
-*0.4.0 (planned)*
-- Join tables
+*0.4.0*
+- Finalized Join functionality through the view(db) function standard on each dataclass object
 
 *0.5.0 (planned)*
 - Built in version control system

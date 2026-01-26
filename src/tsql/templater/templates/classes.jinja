@@ -23,6 +23,8 @@
             | list
         %}{%
             set non_hidden = non_default + default_columns + rowid
+        %}{%
+            set non_hidden_minus_rowid = non_default + default_columns
         %}class {{ table.dataclass }}:
     def __init__(self, {{ table.name[:-1] }}):{%
             for column in non_hidden
@@ -49,7 +51,7 @@
 
     @config.setter
     def config(self, config_dict):{%
-            for i, column in enumerate(non_hidden)
+            for column in non_hidden_minus_rowid
                 %}
         self.{{ column.name }} = config_dict['{{ column.name }}']{%
             endfor
@@ -61,19 +63,19 @@
 
 
     def view(self, db):
-        dict = config
+        config = self.config
         with db:{%
                 for column in reference_columns
                     %}
             {{ column.name }} = db.{{ column.referenced_column.table.name }}.read_by_{{ column.referenced_column.name }}(self.{{ column.name }})
             try:
-                dict['{{ column.name }}'] = {{ column.name }}.view(db)
+                config['{{ column.name }}'] = {{ column.name }}.view(db)
             except AttributeError:
-                dict['{{ column.name }}'] = {{ column.name }}.config
+                config['{{ column.name }}'] = {{ column.name }}.config
 {%
                     endfor
                 %}
-        return dict{%
+        return config{%
             endif
         %}{%
             if j < len(database.tables) - 1
