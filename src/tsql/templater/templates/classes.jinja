@@ -67,7 +67,7 @@
                     %}
             {{ column.name }} = db.{{ column.referenced_column.table.name }}.read_by_{{ column.referenced_column.name }}(self.{{ column.name }})
             try:
-                dict['{{ column.name }}'] = {{ column.name }}.view
+                dict['{{ column.name }}'] = {{ column.name }}.view(db)
             except AttributeError:
                 dict['{{ column.name }}'] = {{ column.name }}.config
 {%

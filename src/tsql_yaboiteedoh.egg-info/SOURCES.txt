@@ -30,7 +30,6 @@ src/tsql/templater/__pycache__/templater.cpython-311.pyc
 src/tsql/templater/templates/__init__.py
 src/tsql/templater/templates/classes.jinja
 src/tsql/templater/templates/database.jinja
-src/tsql/templater/templates/dataclasses.jinja
 src/tsql/templater/templates/table.jinja
 src/tsql/templater/templates/table_init.jinja
 src/tsql_yaboiteedoh.egg-info/PKG-INFO
