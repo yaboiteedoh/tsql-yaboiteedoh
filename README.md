@@ -114,6 +114,18 @@ database.init_tables()
     - Table dataclasses no longer use dataclass module
     - reading and updating values on hidden classes require rowid to query
 
+*0.3.1*
+- Dataclasses now have a config property which prints a simple dictionary
+    - contains row ids for reference tables
+    - setter allows for quick updating of all columns on the object
+- Dataclasses now have a view function which prints a complex dictionary
+    - row id columns for reference tables are now dataclass.config dictionaries
+    - this is recursive
+- Filesystem changes
+    - streamlined the export filesystem
+        - main module contains everything but the table class definitions
+- Module should now be able to find the included database no matter where it gets run from
+
 *0.4.0 (planned)*
 - Join tables
 
