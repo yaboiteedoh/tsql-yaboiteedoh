@@ -1,25 +1,88 @@
-import sqlite3
+{%
+    for j, table in enumerate(database.tables)
+        %}{%
+            set non_default = table.columns
+            | selectattr('hidden', 'false')
+            | selectattr('default', 'none')
+            | selectattr('name', '!=', 'rowid')
+            | list
+        %}{%
+            set default_columns = table.columns
+            | selectattr('hidden', 'false')
+            | selectattr('not_null')
+            | selectattr('default')
+            | selectattr('name', '!=', 'rowid')
+            | list
+        %}{%
+            set rowid = table.columns 
+            | selectattr('name', '==', 'rowid')
+            | list
+        %}{%
+            set reference_columns = table.columns 
+            | selectattr('references')
+            | list
+        %}{%
+            set non_hidden = non_default + default_columns + rowid
+        %}class {{ table.dataclass }}:
+    def __init__(self, {{ table.name[:-1] }}):{%
+            for column in non_hidden
+                %}
+        self.{{ column.name }} = {{ table.name[:-1] }}['{{ column.name }}']{%
+            endfor
+        %}
 
 
-class SQLiteTable:
-    def __init__(self):
-        self.db_dir = 'path'
-        self.dataclass = None
-
-        self._table_name = 'base'
-        self._list_columns = {}
-        self._single_columns = {}
-        self._passive_columns = []
-        self._groups = {}
-        self._filters = {}
-
-
-    def init_db(self):
-        pass
+    @property
+    def config(self):
+        return { {%
+            for i, column in enumerate(non_hidden)
+                %}
+            '{{ column.name }}': self.{{ column.name }}{%
+                    if i < len(non_hidden) - 1
+                        %},{%
+                    endif
+                %}{%
+            endfor
+        %}
+        }
 
 
-    def _dataclsas_row_factory(self, cur, row):
-        fields = [column[0] for column in cur.description]
-        as_dict = {key: value for key, value in zip(fields, row)}
-        return self.dataclass(**as_dict)
+    @config.setter
+    def config(self, config_dict):{%
+            for i, column in enumerate(non_hidden)
+                %}
+        self.{{ column.name }} = config_dict['{{ column.name }}']{%
+            endfor
+        %}{%
+            if table.columns
+            | selectattr('references')
+            | first
+                %}
+
+
+    def view(self, db):
+        dict = config
+        with db:{%
+                for column in reference_columns
+                    %}
+            {{ column.name }} = db.{{ column.referenced_column.table.name }}.read_by_{{ column.referenced_column.name }}(self.{{ column.name }})
+            try:
+                dict['{{ column.name }}'] = {{ column.name }}.view
+            except AttributeError:
+                dict['{{ column.name }}'] = {{ column.name }}.config
+{%
+                    endfor
+                %}
+        return dict{%
+            endif
+        %}{%
+            if j < len(database.tables) - 1
+                %}
+
+
+{%
+            endif
+        %}{%
+    endfor
+%}
 

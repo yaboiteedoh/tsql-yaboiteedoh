@@ -14,7 +14,6 @@ env.globals['len'] = len
 
 DATABASE = env.get_template('database.jinja')
 CLASSES = env.get_template('classes.jinja')
-DATACLASSES = env.get_template('dataclasses.jinja')
 TABLE = env.get_template('table.jinja')
 TABLE_INIT = env.get_template('table_init.jinja')
 
@@ -38,8 +37,7 @@ class Templater:
 
         for template, location in {
             DATABASE: self.fs['database'],
-            CLASSES: self.fs['classes']['classes'],
-            DATACLASSES: self.fs['classes']['dataclasses'],
+            CLASSES: self.fs['classes'],
             TABLE_INIT: self.fs['tables']['init']
         }.items():
             rendered_template = template.render(database=db)
@@ -54,34 +52,21 @@ class Templater:
             'init': Path(*path, '__init__.py').resolve(),
             'database': Path(*path, 'database.py').resolve(),
             'config': Path(*path, f'{db.name}.tsql').resolve(),
+            'db': Path(*path, 'data.db').resolve(),
+            'classes': Path(*path, 'classes.py').resolve(),
             'tables': {
                 'path': Path(*path, 'tables').resolve(),
                 'init': Path(*path, 'tables', '__init__.py').resolve()
-            },
-            'classes': {
-                'path': Path(*path, 'classes').resolve(),
-                'init': Path(*path, 'classes', '__init__.py').resolve(),
-                'classes': Path(*path, 'classes', 'classes.py').resolve(),
-                'dataclasses': Path(*path, 'classes', 'dataclasses.py').resolve()
-            },
-            'data': {
-                'path': Path(*path, 'data').resolve(),
-                'db': Path(*path, 'data', 'data.db').resolve(),
             }
         }
 
         for table in db.tables:
             self.fs['tables'][table.name] = Path(*path, 'tables', f'{table.name}.py').resolve()
 
-        for dir in [
-            self.fs['path'],
-            self.fs['tables']['path'],
-            self.fs['classes']['path'],
-            self.fs['data']['path']
-        ]:
-            dir.mkdir()
+        self.fs['path'].mkdir()
+        self.fs['tables']['path'].mkdir()
 
-        open(self.fs['data']['db'], 'w').close()
+        open(self.fs['db'], 'w').close()
 
         with open(self.fs['config'], 'w') as f:
             json.dump(db.config, f, indent=4)

@@ -1,13 +1,13 @@
 {%
     set single_columns = table.columns
     | selectattr('returns')
-    | selectattr('unique', 'false')
+    | selectattr('unique')
     | selectattr('hidden', 'false')
     | list
 %}{%
     set list_columns = table.columns
     | selectattr('returns')
-    | selectattr('unique')
+    | selectattr('unique', 'false')
     | selectattr('hidden', 'false')
     | list
 %}{%
@@ -32,14 +32,12 @@
     set non_hidden = table.columns
     | selectattr('hidden', 'false')
     | list
-%}from ..classes.classes import SQLiteTable
-from ..classes.dataclasses import {{ table.dataclass }}
+%}from ..classes import {{ table.dataclass }}
 
 
-class {{ table.dataclass }}sTable(SQLiteTable):
+class {{ table.dataclass }}sTable:
     def __init__(self, database):
         self.database = database
-        self.dataclass = {{ table.dataclass }}
 
         self._single_columns = { {%
     for i, column in enumerate(single_columns)
@@ -386,14 +384,15 @@ class {{ table.dataclass }}sTable(SQLiteTable):
 
     def read_{{ column.name }}(rowid: int):
         cur = self.database.cur
-        sql = 'SELECT {{ column.name }} FROM {{ table.name }} WHERE rowid=rowid'
+        cur.row_factory = None
+        sql = 'SELECT {{ column.name }} FROM {{ table.name }} WHERE rowid=?'
         cur.execute(sql, (rowid,))
         return cur.fetchone()
 
 
     def update_{{ column.name }}(rowid: int, {{ column.name }}: {{ column.py_data_type }}):
         cur = self.database.cur
-        sql = 'UPDATE TABLE {{ table.name }} SET {{ column.name }}=? WHERE rowid=rowid'
+        sql = 'UPDATE TABLE {{ table.name }} SET {{ column.name }}=? WHERE rowid=?'
         cur.execute(sql, (rowid,))
         self.database.con.commit(){%
     endfor
@@ -418,4 +417,10 @@ class {{ table.dataclass }}sTable(SQLiteTable):
         '''
         cur.execute(sql, {{ table.name[:-1] }}.as_dict)
         self.database.con.commit()
+
+
+    def _dataclass_row_factory(self, cur, row):
+        fields = [column[0] for column in cur.description]
+        as_dict = {key: value for key, value in zip(fields, row)}
+        return {{ table.dataclass }}(as_dict)
 

@@ -16,12 +16,12 @@ from .tables import ({%
 
 class Database:
     def __init__(self):
+        self.connections = 0
         self.con = None
         self.cur = None
         self.tables = []
         self.path = Path(
-            '{{ database.name }}',
-            'data',
+            Path(__file__).resolve().parent,
             'data.db'
         ).resolve()
         {%
@@ -40,13 +40,17 @@ class Database:
     
 
     def __enter__(self):
-        self.con = sqlite3.connect(self.path)
-        self.cur = self.con.cursor()
+        if not self.con:
+            self.con = sqlite3.connect(self.path)
+            self.cur = self.con.cursor()
+        self.connections += 1
 
 
     def __exit__(self, *args, **kwargs):
-        self.con.commit()
-        self.con.close()
-        self.con = None
-        self.cur = None
+        self.connections -= 1
+        if not self.connections:
+            self.con.commit()
+            self.con.close()
+            self.con = None
+            self.cur = None
 
